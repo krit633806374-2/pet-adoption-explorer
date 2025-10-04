@@ -118,6 +118,7 @@ body {
     display: flex;
     align-items: center;
     min-height: 500px;
+    overflow: hidden;
 }
 
 .hero-content {
@@ -128,19 +129,34 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
     align-items: center;
+    overflow: hidden;
+}
+
+.hero-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
 }
 
 .hero-title {
-    font-size: 3.5rem;
+    font-size: 4rem;
     font-weight: 800;
-    line-height: 1.1;
-    margin-bottom: 1rem;
+    line-height: 1.0;
+    margin-bottom: 0.5rem;
 }
 
 .hero-subtitle {
     font-size: 1.25rem;
     opacity: 0.9;
-    margin-bottom: 2rem;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .hero-search {
@@ -148,6 +164,7 @@ body {
     backdrop-filter: blur(10px);
     border-radius: var(--border-radius-lg);
     padding: 2rem;
+    margin-top: 1rem;
 }
 
 .hero-search-form {
@@ -190,12 +207,56 @@ body {
     transform: translateY(-2px);
 }
 
+.hero-image {
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--border-radius-lg);
+    /* Extend the image beyond the container */
+    margin-right: -3rem;
+    padding-right: 3rem;
+}
+
 .hero-image img {
-    width: 100%;
-    height: 400px;
+    width: 120%;
+    height: 350px;
     object-fit: cover;
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-xl);
+    position: relative;
+}
+
+/* Create fade overlay */
+.hero-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 50%;
+    background: linear-gradient(to right, 
+        transparent 0%, 
+        rgba(102, 126, 234, 0.2) 60%, 
+        rgba(102, 126, 234, 0.6) 85%, 
+        rgba(118, 75, 162, 0.9) 100%);
+    border-radius: var(--border-radius-lg);
+}
+
+/* Add subtle inner shadow for depth */
+.hero-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right, 
+        rgba(0,0,0,0.1) 0%, 
+        transparent 30%, 
+        transparent 70%, 
+        rgba(0,0,0,0.2) 100%);
+    border-radius: var(--border-radius-lg);
+    z-index: 1;
 }
 
 /* Pet Browse Gallery */
@@ -863,15 +924,45 @@ body {
 @media (max-width: 768px) {
     .hero-content {
         grid-template-columns: 1fr;
+        gap: 2rem;
         text-align: center;
     }
     
+    .hero-left {
+        order: 2;
+    }
+    
+    .hero-right {
+        order: 1;
+    }
+    
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.8rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .hero-image {
+        margin-right: -1rem;
+        padding-right: 1rem;
+    }
+    
+    .hero-image img {
+        height: 250px;
+        width: 110%;
+    }
+    
+    .hero-image::after {
+        width: 40%;
+    }
+    
+    .hero-search {
+        padding: 1.5rem;
+        margin-top: 1rem;
     }
     
     .search-input-group {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .pet-browse-gallery {
