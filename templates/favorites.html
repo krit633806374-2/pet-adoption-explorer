@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorites - PawFinder</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-heart"></i>
+                <span>PawFinder</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">Find Pets</a></li>
+                <li><a href="/favorites" class="nav-link active">My Favorites</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Favorites Header -->
+    <section class="favorites-header-section">
+        <div class="container">
+            <div class="page-header">
+                <div class="header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-heart"></i>
+                        My Favorite Pets
+                    </h1>
+                    <p class="page-subtitle">Keep track of pets you're interested in adopting</p>
+                </div>
+                <div class="header-actions">
+                    <button id="refresh-favorites" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                    <button id="export-favorites" class="btn btn-accent">
+                        <i class="fas fa-download"></i>
+                        Export to JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Favorites Stats -->
+    <section class="favorites-stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="total-favorites">0</div>
+                        <div class="stat-label">Total Favorites</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-dog"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="dog-count">0</div>
+                        <div class="stat-label">Dogs</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-cat"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="cat-count">0</div>
+                        <div class="stat-label">Cats</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="recent-added">0</div>
+                        <div class="stat-label">Recently Added</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Favorites Filter -->
+    <section class="favorites-filter">
+        <div class="container">
+            <div class="filter-card">
+                <div class="filter-header">
+                    <h3><i class="fas fa-filter"></i> Filter Favorites</h3>
+                </div>
+                <div class="filter-options">
+                    <button class="filter-btn active" data-filter="all">
+                        <i class="fas fa-paw"></i> All Pets
+                    </button>
+                    <button class="filter-btn" data-filter="dog">
+                        <i class="fas fa-dog"></i> Dogs
+                    </button>
+                    <button class="filter-btn" data-filter="cat">
+                        <i class="fas fa-cat"></i> Cats
+                    </button>
+                    <button class="filter-btn" data-filter="young">
+                        <i class="fas fa-baby"></i> Young
+                    </button>
+                    <button class="filter-btn" data-filter="adult">
+                        <i class="fas fa-user"></i> Adult
+                    </button>
+                    <button class="filter-btn" data-filter="senior">
+                        <i class="fas fa-user-alt"></i> Senior
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Favorites List -->
+    <section class="favorites-content">
+        <div class="container">
+            <div id="favorites-list" class="pets-grid">
+                <!-- Favorites will be loaded here -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="empty-favorites" class="empty-state hidden">
+                <div class="empty-content">
+                    <i class="fas fa-heart-broken"></i>
+                    <h3>No favorites yet</h3>
+                    <p>Start searching for pets and save your favorites to see them here!</p>
+                    <a href="/" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                        Start Searching
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-heart"></i>
+                        <span>PawFinder</span>
+                    </div>
+                    <p>Connecting pets with loving families since 2025</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Adopt or Get Involved</h4>
+                    <ul>
+                        <li><a href="/">Find a Pet</a></li>
+                        <li><a href="#">Shelters & Rescues</a></li>
+                        <li><a href="#">Volunteer</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Pet Care</a></li>
+                        <li><a href="#">Adoption Guide</a></li>
+                        <li><a href="#">FAQs</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 PawFinder. All rights reserved. Bringing pets and families together.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Loading your favorites...</p>
+    </div>
+
+    <script src="/static/js/favorites.js"></script>
+</body>
+</html>
