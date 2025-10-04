@@ -1,16 +1,25 @@
+# models/pet.py
+from dataclasses import dataclass, asdict
+from typing import Optional
+
+@dataclass
 class Pet:
-    def __init__(self, pet_id, name, pet_type, breed, age, contact, photo_url=None, phone=None, gender=None, size=None, description=None):
-        self.pet_id = pet_id
-        self.name = name
-        self.pet_type = pet_type
-        self.breed = breed
-        self.age = age
-        self.contact = contact
-        self.photo_url = photo_url
-        self.phone = phone
-        self.gender = gender
-        self.size = size
-        self.description = description
+    pet_id: str
+    name: str
+    pet_type: Optional[str] = None
+    breed: Optional[str] = None
+    age: Optional[str] = None
+    contact: Optional[str] = None
+    photo_url: Optional[str] = None
+    phone: Optional[str] = None
+    gender: Optional[str] = None
+    size: Optional[str] = None
+    description: Optional[str] = None
+
+    def to_dict(self):
+        return asdict(self)
 
     def __str__(self):
-        return f"{self.name} ({self.breed}, {self.age})"
+        b = self.breed or "Mixed"
+        a = self.age or "Unknown"
+        return f"{self.name} ({b}, {a})"

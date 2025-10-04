@@ -1,159 +1,120 @@
-document.addEventListener('DOMContentLoaded', function() {
-    loadFavorites();
-    setupFilters();
+// static/js/favorites.js
+document.addEventListener('DOMContentLoaded', () => {
+  loadFavorites();
+  setupFilters();
+  const refreshBtn = document.getElementById('refresh-favorites');
+  refreshBtn?.addEventListener('click', loadFavorites);
 });
 
-function setupFilters() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            
-            const filter = this.getAttribute('data-filter');
-            filterFavorites(filter);
-        });
+function setupFilters(){
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  filterButtons.forEach(btn=>{
+    btn.addEventListener('click', function(){
+      filterButtons.forEach(b=>b.classList.remove('active'));
+      this.classList.add('active');
+      filterFavorites(this.getAttribute('data-filter'));
     });
+  });
 }
 
-async function loadFavorites() {
-    const favoritesGrid = document.getElementById('favorites-list');
-    const emptyState = document.getElementById('empty-favorites');
-    const loading = document.getElementById('loading');
-    
-    try {
-        loading.classList.remove('hidden');
-        
-        const response = await fetch('/favorites');
-        const data = await response.json();
-        
-        loading.classList.add('hidden');
-        
-        if (data.pets && data.pets.length > 0) {
-            displayFavorites(data.pets);
-            emptyState.classList.add('hidden');
-            favoritesGrid.classList.remove('hidden');
-        } else {
-            emptyState.classList.remove('hidden');
-            favoritesGrid.classList.add('hidden');
-        }
-        
-    } catch (error) {
-        console.error('Error loading favorites:', error);
-        loading.classList.add('hidden');
-        showMessage('Error loading favorites', 'error');
+async function loadFavorites(){
+  const listEl = document.getElementById('favorites-list');
+  const emptyEl = document.getElementById('empty-favorites');
+  const loading = document.getElementById('loading');
+  try{
+    loading?.classList.remove('hidden');
+    const res = await fetch('/api/favorites');
+    const data = await res.json(); // array
+    loading?.classList.add('hidden');
+
+    if(Array.isArray(data) && data.length){
+      renderFavorites(data);
+      emptyEl?.classList.add('hidden');
+      listEl?.classList.remove('hidden');
+      updateStats(data);
+    }else{
+      listEl.innerHTML = '';
+      emptyEl?.classList.remove('hidden');
+      listEl?.classList.add('hidden');
+      updateStats([]);
     }
+  }catch(e){
+    console.error(e);
+    loading?.classList.add('hidden');
+    showMessage('Error loading favorites','error');
+  }
 }
 
-function displayFavorites(pets) {
-    const favoritesGrid = document.getElementById('favorites-list');
-    favoritesGrid.innerHTML = '';
-    
-    pets.forEach(pet => {
-        const petCard = createFavoriteCard(pet);
-        favoritesGrid.appendChild(petCard);
-    });
+function renderFavorites(pets){
+  const listEl = document.getElementById('favorites-list');
+  listEl.innerHTML = '';
+  pets.forEach(p => listEl.appendChild(createFavoriteCard(p)));
 }
 
-function createFavoriteCard(pet) {
-    const card = document.createElement('div');
-    card.className = 'pet-card';
-    
-    card.innerHTML = `
-        <div class="pet-image-container">
-            <img src="${pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400'}" 
-                 alt="${pet.name || 'Pet'}" 
-                 class="pet-image">
-        </div>
-        
-        <div class="pet-info">
-            <div class="pet-name">${pet.name || 'Pet'}</div>
-            
-            <div class="pet-details">
-                <div class="detail-row">
-                    <i class="fas fa-dna"></i>
-                    <span><strong>Breed:</strong> ${pet.breed || 'Mixed'}</span>
-                </div>
-                <div class="detail-row">
-                    <i class="fas fa-birthday-cake"></i>
-                    <span><strong>Age:</strong> ${pet.age || 'Unknown'}</span>
-                </div>
-                <div class="detail-row">
-                    <i class="fas fa-paw"></i>
-                    <span><strong>Type:</strong> ${pet.type || 'Pet'}</span>
-                </div>
-            </div>
-            
-            <div class="pet-contact">
-                <h4><i class="fas fa-phone"></i> Contact</h4>
-                <div class="contact-details">
-                    ${pet.contact ? `
-                    <div class="contact-item">
-                        <i class="fas fa-envelope"></i>
-                        <a href="mailto:${pet.contact}">${pet.contact}</a>
-                    </div>` : ''}
-                    ${pet.phone ? `
-                    <div class="contact-item">
-                        <i class="fas fa-phone-alt"></i>
-                        <a href="tel:${pet.phone}">${pet.phone}</a>
-                    </div>` : ''}
-                </div>
-            </div>
-            
-            <div class="pet-actions">
-                <button onclick="removeFavorite('${pet.id}', '${pet.name || 'Pet'}')" 
-                        class="btn btn-danger btn-remove">
-                    <i class="fas fa-trash"></i> Remove from Favorites
-                </button>
-            </div>
-        </div>
-    `;
-    
-    return card;
+function createFavoriteCard(pet){
+  const card = document.createElement('div');
+  card.className = 'pet-card';
+  const safe = s=> (s||'').toString().replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  card.innerHTML = `
+    <div class="pet-image-container">
+      <img src="${pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400'}"
+           alt="${safe(pet.name)||'Pet'}" class="pet-image">
+    </div>
+    <div class="pet-info">
+      <div class="pet-name">${safe(pet.name) || 'Pet'}</div>
+      <div class="pet-details">
+        <div class="detail-row"><i class="fas fa-dna"></i><span><strong>Breed:</strong> ${safe(pet.breed) || 'Mixed'}</span></div>
+        <div class="detail-row"><i class="fas fa-birthday-cake"></i><span><strong>Age:</strong> ${safe(pet.age) || 'Unknown'}</span></div>
+        <div class="detail-row"><i class="fas fa-paw"></i><span><strong>Type:</strong> ${safe(pet.type) || 'Pet'}</span></div>
+      </div>
+      <div class="pet-actions">
+        <button class="btn btn-danger btn-remove"><i class="fas fa-trash"></i> Remove</button>
+      </div>
+    </div>
+  `;
+  card.querySelector('.btn-remove').addEventListener('click', ()=> removeFavorite(pet.id, pet.name));
+  return card;
 }
 
-async function removeFavorite(petId, petName) {
-    if (confirm('Remove ' + petName + ' from favorites?')) {
-        try {
-            const response = await fetch('/manage_favorites', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    action: 'add',
-                    pet_id: petId
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                showMessage(petName + ' removed from favorites!', 'info');
-                loadFavorites();
-            }
-            
-        } catch (error) {
-            console.error('Error:', error);
-            showMessage('Error removing favorite', 'error');
-        }
-    }
+async function removeFavorite(petId, name){
+  if(!confirm(`Remove ${name || 'this pet'} from favorites?`)) return;
+  try{
+    const res = await fetch(`/api/favorites/${encodeURIComponent(petId)}`, { method: 'DELETE' });
+    if(!res.ok) throw new Error('delete failed');
+    showMessage('Removed from favorites','info');
+    loadFavorites();
+  }catch(e){
+    console.error(e);
+    showMessage('Error removing favorite','error');
+  }
 }
 
-function filterFavorites(filter) {
-    const petCards = document.querySelectorAll('.pet-card');
-    
-    petCards.forEach(card => {
-        card.style.display = 'block';
-    });
+function filterFavorites(filter){
+  const cards = document.querySelectorAll('.pet-card');
+  cards.forEach(c => {
+    if(filter==='all') { c.style.display='block'; return; }
+    const typeEl = c.querySelector('.detail-row span');
+    const text = (typeEl?.innerText || '').toLowerCase();
+    c.style.display = text.includes(filter) ? 'block' : 'none';
+  });
 }
 
-function showMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message ' + (type || 'success');
-    messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
-    
-    document.body.appendChild(messageDiv);
-    
-    setTimeout(function() {
-        messageDiv.remove();
-    }, 3000);
+function updateStats(pets){
+  const totalEl = document.getElementById('total-favorites');
+  const dogEl = document.getElementById('dog-count');
+  const catEl = document.getElementById('cat-count');
+  const recentEl = document.getElementById('recent-added');
+
+  totalEl && (totalEl.textContent = pets.length);
+  dogEl && (dogEl.textContent = pets.filter(p=> (p.type||'').toLowerCase()==='dog').length);
+  catEl && (catEl.textContent = pets.filter(p=> (p.type||'').toLowerCase()==='cat').length);
+  recentEl && (recentEl.textContent = Math.min(pets.length, 5)); // เดโม่ง่าย ๆ
+}
+
+function showMessage(message, type='success'){
+  const el = document.createElement('div');
+  el.className = `message ${type}`;
+  el.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':(type==='info'?'info-circle':'exclamation-circle')}"></i> ${message}`;
+  document.body.prepend(el);
+  setTimeout(()=>el.remove(), 3000);
 }
