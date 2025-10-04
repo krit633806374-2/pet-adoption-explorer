@@ -1,263 +1,159 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements
-    const refreshFavoritesBtn = document.getElementById('refresh-favorites');
-    const exportFavoritesBtn = document.getElementById('export-favorites');
-    const favoritesList = document.getElementById('favorites-list');
-    const emptyFavorites = document.getElementById('empty-favorites');
-    const loading = document.getElementById('loading');
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    
-    // Stats Elements
-    const totalFavoritesEl = document.getElementById('total-favorites');
-    const dogCountEl = document.getElementById('dog-count');
-    const catCountEl = document.getElementById('cat-count');
-    const recentAddedEl = document.getElementById('recent-added');
-
-    let allFavorites = [];
-    let filteredFavorites = [];
-
-    // Utility Functions
-    function showLoading() {
-        loading.classList.remove('hidden');
-    }
-
-    function hideLoading() {
-        loading.classList.add('hidden');
-    }
-
-    function showMessage(message, type = 'success') {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${type}`;
-        messageDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
-        
-        document.body.insertBefore(messageDiv, document.body.firstChild);
-        
-        setTimeout(() => {
-            messageDiv.remove();
-        }, 4000);
-    }
-
-    // Load Favorites
-    async function loadFavorites() {
-        showLoading();
-        
-        try {
-            const response = await fetch('/favorites');
-            const favorites = await response.json();
-            
-            allFavorites = favorites;
-            filteredFavorites = [...favorites];
-            
-            updateStats(favorites);
-            displayFavorites(favorites);
-            
-        } catch (error) {
-            console.error('Error loading favorites:', error);
-            showMessage('Error loading favorites. Please try again.', 'error');
-            showEmptyState();
-        } finally {
-            hideLoading();
-        }
-    }
-
-    // Update Statistics
-    function updateStats(favorites) {
-        const totalCount = favorites.length;
-        const dogCount = favorites.filter(fav => fav[3].toLowerCase() === 'dog').length;
-        const catCount = favorites.filter(fav => fav[3].toLowerCase() === 'cat').length;
-        const recentCount = Math.min(totalCount, 3); // Assuming recent = last 3 added
-        
-        // Animate number changes
-        animateNumber(totalFavoritesEl, totalCount);
-        animateNumber(dogCountEl, dogCount);
-        animateNumber(catCountEl, catCount);
-        animateNumber(recentAddedEl, recentCount);
-    }
-
-    // Animate Number
-    function animateNumber(element, targetNumber) {
-        const currentNumber = parseInt(element.textContent) || 0;
-        const increment = targetNumber > currentNumber ? 1 : -1;
-        const duration = 1000;
-        const steps = Math.abs(targetNumber - currentNumber);
-        const stepDuration = steps > 0 ? duration / steps : 0;
-
-        if (steps === 0) return;
-
-        let current = currentNumber;
-        const timer = setInterval(() => {
-            current += increment;
-            element.textContent = current;
-            
-            if (current === targetNumber) {
-                clearInterval(timer);
-            }
-        }, stepDuration);
-    }
-
-    // Display Favorites
-    function displayFavorites(favorites) {
-        favoritesList.innerHTML = '';
-        
-        if (favorites.length === 0) {
-            showEmptyState();
-            return;
-        }
-        
-        hideEmptyState();
-        
-        favorites.forEach(fav => {
-            const favCard = createFavoriteCard(fav);
-            favoritesList.appendChild(favCard);
-        });
-    }
-
-    // Create Favorite Card
-    function createFavoriteCard(fav) {
-        const card = document.createElement('div');
-        card.className = 'pet-card';
-        card.setAttribute('data-type', fav[3].toLowerCase());
-        card.setAttribute('data-age', fav[5].toLowerCase());
-        
-        card.innerHTML = `
-            <img src="${fav[7] || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop'}" 
-                 alt="${fav[2]}" 
-                 class="pet-image"
-                 onerror="this.src='https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop'">
-            
-            <div class="pet-info">
-                <div class="pet-name">${fav[2]}</div>
-                <div class="pet-details">
-                    <div><i class="fas fa-paw"></i> <strong>Breed:</strong> ${fav[4]}</div>
-                    <div><i class="fas fa-birthday-cake"></i> <strong>Age:</strong> ${fav[5]}</div>
-                    <div><i class="fas fa-tag"></i> <strong>Type:</strong> ${fav[3]}</div>
-                </div>
-                <div class="pet-contact">
-                    <i class="fas fa-envelope"></i> ${fav[6]}
-                </div>
-                <div class="pet-actions">
-                    <button onclick="deleteFavorite('${fav[1]}')" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Remove
-                    </button>
-                    <button onclick="contactShelter('${fav[6]}')" class="btn btn-secondary">
-                        <i class="fas fa-phone"></i> Contact
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        return card;
-    }
-
-    // Show/Hide Empty State
-    function showEmptyState() {
-        favoritesList.style.display = 'none';
-        emptyFavorites.classList.remove('hidden');
-    }
-
-    function hideEmptyState() {
-        favoritesList.style.display = 'grid';
-        emptyFavorites.classList.add('hidden');
-    }
-
-    // Filter Favorites
-    function filterFavorites(filterType) {
-        let filtered = [...allFavorites];
-        
-        if (filterType !== 'all') {
-            filtered = allFavorites.filter(fav => {
-                const type = fav[3].toLowerCase();
-                const age = fav[5].toLowerCase();
-                
-                return type === filterType || age === filterType;
-            });
-        }
-        
-        filteredFavorites = filtered;
-        displayFavorites(filtered);
-        updateStats(filtered);
-    }
-
-    // Event Listeners
-    refreshFavoritesBtn.addEventListener('click', () => {
-        loadFavorites();
-        showMessage('Favorites refreshed!');
-    });
-
-    exportFavoritesBtn.addEventListener('click', async () => {
-        showLoading();
-        
-        try {
-            const response = await fetch('/export');
-            const result = await response.json();
-            
-            showMessage('Favorites exported to favorites.json successfully!');
-            
-        } catch (error) {
-            console.error('Error exporting favorites:', error);
-            showMessage('Error exporting favorites. Please try again.', 'error');
-        } finally {
-            hideLoading();
-        }
-    });
-
-    // Filter Button Event Listeners
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from all buttons
-            filterBtns.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
-            btn.classList.add('active');
-            
-            const filterType = btn.getAttribute('data-filter');
-            filterFavorites(filterType);
-        });
-    });
-
-    // Load favorites on page load
+document.addEventListener('DOMContentLoaded', function() {
     loadFavorites();
+    setupFilters();
 });
 
-// Global Functions
-window.deleteFavorite = async function(petId) {
-    if (confirm('Are you sure you want to remove this pet from your favorites?')) {
+function setupFilters() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            filterFavorites(filter);
+        });
+    });
+}
+
+async function loadFavorites() {
+    const favoritesGrid = document.getElementById('favorites-list');
+    const emptyState = document.getElementById('empty-favorites');
+    const loading = document.getElementById('loading');
+    
+    try {
+        loading.classList.remove('hidden');
+        
+        const response = await fetch('/favorites');
+        const data = await response.json();
+        
+        loading.classList.add('hidden');
+        
+        if (data.pets && data.pets.length > 0) {
+            displayFavorites(data.pets);
+            emptyState.classList.add('hidden');
+            favoritesGrid.classList.remove('hidden');
+        } else {
+            emptyState.classList.remove('hidden');
+            favoritesGrid.classList.add('hidden');
+        }
+        
+    } catch (error) {
+        console.error('Error loading favorites:', error);
+        loading.classList.add('hidden');
+        showMessage('Error loading favorites', 'error');
+    }
+}
+
+function displayFavorites(pets) {
+    const favoritesGrid = document.getElementById('favorites-list');
+    favoritesGrid.innerHTML = '';
+    
+    pets.forEach(pet => {
+        const petCard = createFavoriteCard(pet);
+        favoritesGrid.appendChild(petCard);
+    });
+}
+
+function createFavoriteCard(pet) {
+    const card = document.createElement('div');
+    card.className = 'pet-card';
+    
+    card.innerHTML = `
+        <div class="pet-image-container">
+            <img src="${pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400'}" 
+                 alt="${pet.name || 'Pet'}" 
+                 class="pet-image">
+        </div>
+        
+        <div class="pet-info">
+            <div class="pet-name">${pet.name || 'Pet'}</div>
+            
+            <div class="pet-details">
+                <div class="detail-row">
+                    <i class="fas fa-dna"></i>
+                    <span><strong>Breed:</strong> ${pet.breed || 'Mixed'}</span>
+                </div>
+                <div class="detail-row">
+                    <i class="fas fa-birthday-cake"></i>
+                    <span><strong>Age:</strong> ${pet.age || 'Unknown'}</span>
+                </div>
+                <div class="detail-row">
+                    <i class="fas fa-paw"></i>
+                    <span><strong>Type:</strong> ${pet.type || 'Pet'}</span>
+                </div>
+            </div>
+            
+            <div class="pet-contact">
+                <h4><i class="fas fa-phone"></i> Contact</h4>
+                <div class="contact-details">
+                    ${pet.contact ? `
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:${pet.contact}">${pet.contact}</a>
+                    </div>` : ''}
+                    ${pet.phone ? `
+                    <div class="contact-item">
+                        <i class="fas fa-phone-alt"></i>
+                        <a href="tel:${pet.phone}">${pet.phone}</a>
+                    </div>` : ''}
+                </div>
+            </div>
+            
+            <div class="pet-actions">
+                <button onclick="removeFavorite('${pet.id}', '${pet.name || 'Pet'}')" 
+                        class="btn btn-danger btn-remove">
+                    <i class="fas fa-trash"></i> Remove from Favorites
+                </button>
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+async function removeFavorite(petId, petName) {
+    if (confirm('Remove ' + petName + ' from favorites?')) {
         try {
-            const response = await fetch(`/favorites?pet_id=${petId}`, { 
-                method: 'DELETE' 
+            const response = await fetch('/manage_favorites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'add',
+                    pet_id: petId
+                })
             });
             
-            if (response.ok) {
-                showMessage('Pet removed from favorites!');
-                // Reload favorites
-                location.reload();
-            } else {
-                throw new Error('Failed to delete favorite');
+            const result = await response.json();
+            
+            if (result.success) {
+                showMessage(petName + ' removed from favorites!', 'info');
+                loadFavorites();
             }
             
         } catch (error) {
-            console.error('Error deleting favorite:', error);
-            showMessage('Error removing favorite. Please try again.', 'error');
+            console.error('Error:', error);
+            showMessage('Error removing favorite', 'error');
         }
     }
-};
+}
 
-window.contactShelter = function(email) {
-    if (email && email !== 'Contact shelter directly') {
-        window.location.href = `mailto:${email}?subject=Interest in Pet Adoption&body=Hello, I am interested in adopting one of your pets. Please let me know more details.`;
-    } else {
-        showMessage('Contact information not available for this pet.', 'error');
-    }
-};
+function filterFavorites(filter) {
+    const petCards = document.querySelectorAll('.pet-card');
+    
+    petCards.forEach(card => {
+        card.style.display = 'block';
+    });
+}
 
-// Show message function for global use
-window.showMessage = function(message, type = 'success') {
+function showMessage(message, type) {
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+    messageDiv.className = 'message ' + (type || 'success');
+    messageDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
     
-    document.body.insertBefore(messageDiv, document.body.firstChild);
+    document.body.appendChild(messageDiv);
     
-    setTimeout(() => {
+    setTimeout(function() {
         messageDiv.remove();
-    }, 4000);
-};
+    }, 3000);
+}

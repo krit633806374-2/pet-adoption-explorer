@@ -28,35 +28,51 @@ def search_pets():
         'breed': pet.breed,
         'age': pet.age,
         'contact': pet.contact,
-        'photo_url': pet.photo_url
+        'photo_url': pet.photo_url,
+        'phone': pet.phone,
+        'gender': pet.gender,
+        'size': pet.size,
+        'description': pet.description
     } for pet in pets])
 
-@app.route('/favorites', methods=['GET', 'POST', 'DELETE'])
+@app.route('/manage_favorites', methods=['POST'])
 def manage_favorites():
-    if request.method == 'GET':
+    data = request.json
+    action = data.get('action', 'add')
+    pet_id = data.get('pet_id')
+    
+    if action == 'add':
+        # Check if already in favorites
         favorites = app_controller.view_favorites()
-        return jsonify(favorites)
+        existing_pet = next((pet for pet in favorites.get('pets', []) if pet.get('id') == pet_id), None)
+        
+        if existing_pet:
+            # Remove from favorites
+            app_controller.delete_favorite(pet_id)
+            return jsonify({'success': True, 'action': 'removed', 'message': 'Removed from favorites'}), 200
+        else:
+            # Add to favorites - get pet details from API
+            pet_data = app_controller.get_pet_by_id(pet_id)
+            if pet_data:
+                from models.pet import Pet
+                pet = Pet(
+                    pet_id=pet_data.get('id'),
+                    name=pet_data.get('name'),
+                    pet_type=pet_data.get('type'),
+                    breed=pet_data.get('breeds', {}).get('primary', 'Mixed'),
+                    age=pet_data.get('age'),
+                    contact=pet_data.get('contact', {}).get('email', 'Contact shelter directly'),
+                    photo_url=pet_data.get('photos', [{}])[0].get('large') if pet_data.get('photos') else None
+                )
+                app_controller.save_favorite(pet)
+                return jsonify({'success': True, 'action': 'added', 'message': 'Added to favorites'}), 201
+            else:
+                return jsonify({'success': False, 'message': 'Pet not found'}), 404
 
-    elif request.method == 'POST':
-        data = request.json
-        # Create a Pet object from the received data
-        from models.pet import Pet
-        pet = Pet(
-            pet_id=data.get('pet_id'),
-            name=data.get('name'),
-            pet_type=data.get('type'),
-            breed=data.get('breed'),
-            age=data.get('age'),
-            contact=data.get('contact'),
-            photo_url=data.get('photo_url')
-        )
-        app_controller.save_favorite(pet)
-        return jsonify({'message': 'Favorite saved!'}), 201
-
-    elif request.method == 'DELETE':
-        pet_id = request.args.get('pet_id')
-        app_controller.delete_favorite(pet_id)
-        return jsonify({'message': 'Favorite deleted!'}), 200
+@app.route('/favorites', methods=['GET'])
+def get_favorites():
+    favorites = app_controller.view_favorites()
+    return jsonify(favorites)
 
 @app.route('/export', methods=['GET'])
 def export_favorites():

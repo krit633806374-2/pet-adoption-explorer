@@ -219,26 +219,74 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = 'pet-card';
         
         card.innerHTML = `
-            <img src="${pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop'}" 
-                 alt="${pet.name || 'Adorable pet'}" 
-                 class="pet-image" 
-                 onerror="this.src='https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop'">
+            <div class="pet-image-container">
+                <img src="${pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop'}" 
+                     alt="${pet.name || 'Adorable pet'}" 
+                     class="pet-image" 
+                     onerror="this.src='https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop'">
+            </div>
             
             <div class="pet-info">
                 <div class="pet-name">${pet.name || 'Sweet Pet'}</div>
+                
                 <div class="pet-details">
-                    <div><strong>Breed:</strong> ${pet.breed || 'Mixed'}</div>
-                    <div><strong>Age:</strong> ${pet.age || 'Unknown'}</div>
-                    <div><strong>Type:</strong> ${pet.type || 'Pet'}</div>
+                    <div class="detail-row">
+                        <i class="fas fa-dna"></i>
+                        <span><strong>Breed:</strong> ${pet.breed || 'Mixed'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-birthday-cake"></i>
+                        <span><strong>Age:</strong> ${pet.age || 'Unknown'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-paw"></i>
+                        <span><strong>Type:</strong> ${pet.type || 'Pet'}</span>
+                    </div>
+                    ${pet.gender ? `
+                    <div class="detail-row">
+                        <i class="fas fa-venus-mars"></i>
+                        <span><strong>Gender:</strong> ${pet.gender}</span>
+                    </div>` : ''}
+                    ${pet.size ? `
+                    <div class="detail-row">
+                        <i class="fas fa-weight"></i>
+                        <span><strong>Size:</strong> ${pet.size}</span>
+                    </div>` : ''}
                 </div>
-                <div class="pet-contact">
-                    <i class="fas fa-envelope"></i> 
-                    ${pet.contact || 'Contact shelter directly'}
+                
+                ${pet.description ? `
+                <div class="pet-description">
+                    <h4><i class="fas fa-info-circle"></i> About ${pet.name}</h4>
+                    <p>${pet.description}</p>
+                </div>` : ''}
+                
+                <div class="contact-section">
+                    <div class="contact-info">
+                        ${pet.contact ? `
+                        <div class="contact-item">
+                            <i class="fas fa-envelope contact-icon"></i>
+                            <div class="contact-details">
+                                <span class="contact-label">Email:</span>
+                                <a href="mailto:${pet.contact}" class="contact-value">${pet.contact}</a>
+                            </div>
+                        </div>` : ''}
+                        ${pet.phone ? `
+                        <div class="contact-item">
+                            <i class="fas fa-phone-alt contact-icon"></i>
+                            <div class="contact-details">
+                                <span class="contact-label">Tel:</span>
+                                <a href="tel:${pet.phone}" class="contact-value">${pet.phone}</a>
+                            </div>
+                        </div>` : ''}
+                    </div>
                 </div>
-                <button onclick="saveFavorite('${pet.id}', '${pet.name?.replace(/'/g, "\\'")}', '${pet.type}', '${pet.breed?.replace(/'/g, "\\'")}', '${pet.age}', '${pet.contact?.replace(/'/g, "\\'")}', '${pet.photo_url}')" 
-                        class="btn btn-primary">
-                    <i class="fas fa-heart"></i> Save to Favorites
-                </button>
+                
+                <div class="pet-actions">
+                    <button onclick="saveFavorite('${pet.id}', '${pet.name?.replace(/'/g, "\\'")}', '${pet.type}', '${pet.breed?.replace(/'/g, "\\'")}', '${pet.age}', '${pet.contact?.replace(/'/g, "\\'")}', '${pet.photo_url}')" 
+                            class="btn btn-primary btn-favorite">
+                        <i class="fas fa-heart"></i> Save to Favorites
+                    </button>
+                </div>
             </div>
         `;
         
@@ -253,24 +301,35 @@ document.addEventListener('DOMContentLoaded', () => {
 // Global Functions for onclick handlers
 window.saveFavorite = async function(petId, name, type, breed, age, contact, photoUrl) {
     try {
-        const response = await fetch('/favorites', {
+        const response = await fetch('/manage_favorites', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                pet_id: petId,
-                name: name,
-                type: type,
-                breed: breed,
-                age: age,
-                contact: contact,
-                photo_url: photoUrl
+                action: 'add',
+                pet_id: petId
             })
         });
         
-        if (response.ok) {
-            showMessage(`${name || 'Pet'} saved to favorites!`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const button = event?.target || document.querySelector(`button[onclick*="${petId}"]`);
+            
+            if (result.action === 'added') {
+                if (button) {
+                    button.classList.add('favorited');
+                    button.innerHTML = '<i class="fas fa-heart"></i> Added!';
+                }
+                showMessage(`${name || 'Pet'} added to favorites!`, 'success');
+            } else {
+                if (button) {
+                    button.classList.remove('favorited');
+                    button.innerHTML = '<i class="fas fa-heart"></i> Save to Favorites';
+                }
+                showMessage(`${name || 'Pet'} removed from favorites!`, 'info');
+            }
         } else {
-            throw new Error('Failed to save favorite');
+            throw new Error(result.message || 'Failed to manage favorite');
         }
         
     } catch (error) {

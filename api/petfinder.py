@@ -45,18 +45,30 @@ class PetFinderAPI:
         if not self.access_token:
             # Enhanced mock response with more variety
             mock_pets = [
-                Pet(1, "Buddy", "Dog", "Labrador Retriever", "Adult", "shelter@email.com", "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400"),
-                Pet(2, "Mittens", "Cat", "Siamese", "Young", "catlover@shelter.org", "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400"),
-                Pet(3, "Charlie", "Dog", "Golden Retriever", "Senior", "rescue@doghouse.org", "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400"),
-                Pet(4, "Luna", "Cat", "Persian", "Adult", "catrescue@email.com", "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400"),
-                Pet(5, "Max", "Dog", "German Shepherd", "Young", "germanrescue@shelter.com", "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=400"),
-                Pet(6, "Whiskers", "Cat", "Maine Coon", "Adult", "mainecoon@rescue.org", "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=400"),
-                Pet(7, "Rocky", "Dog", "Bulldog", "Adult", "bulldog@shelter.net", "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400"),
-                Pet(8, "Bella", "Cat", "Tabby", "Young", "tabby@catrescue.org", "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400"),
-                Pet(9, "Oscar", "Dog", "Beagle", "Adult", "beagle@rescue.com", "https://images.unsplash.com/photo-1601758123927-4ac846cdc771?w=400"),
-                Pet(10, "Mia", "Cat", "British Shorthair", "Young", "british@catshelter.org", "https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=400"),
-                Pet(11, "Rex", "Dog", "Rottweiler", "Adult", "rottweiler@shelter.net", "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400"),
-                Pet(12, "Chloe", "Cat", "Ragdoll", "Senior", "ragdoll@rescue.org", "https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=400")
+                Pet(1, "Buddy", "Dog", "Labrador Retriever", "Adult", "shelter@email.com", 
+                    "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400", 
+                    "02-123-4567", "Male", "Large", "Buddy เป็นสุนัขที่ร่าเริงและเป็นมิตรมาก รักการเล่นกับเด็กๆ"),
+                Pet(2, "Mittens", "Cat", "Siamese", "Young", "catlover@shelter.org", 
+                    "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400", 
+                    "02-234-5678", "Female", "Medium", "Mittens เป็นแมวที่สวยงามและสงบ ชอบการลูบไล้"),
+                Pet(3, "Charlie", "Dog", "Golden Retriever", "Senior", "rescue@doghouse.org", 
+                    "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400", 
+                    "02-345-6789", "Male", "Large", "Charlie เป็นสุนัขอายุมากที่เต็มไปด้วยความรักและความอ่อนโยน"),
+                Pet(4, "Luna", "Cat", "Persian", "Adult", "catrescue@email.com", 
+                    "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400", 
+                    "02-456-7890", "Female", "Medium", "Luna เป็นแมวเปอร์เซียที่สวยงามและนุ่มนวล"),
+                Pet(5, "Max", "Dog", "German Shepherd", "Young", "germanrescue@shelter.com", 
+                    "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=400", 
+                    "02-567-8901", "Male", "Large", "Max เป็นสุนัขที่ฉลาดและซื่อสัตย์ เหมาะสำหรับเป็นสุนัขเฝ้าบ้าน"),
+                Pet(6, "Whiskers", "Cat", "Maine Coon", "Adult", "mainecoon@rescue.org", 
+                    "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=400", 
+                    "02-678-9012", "Female", "Large", "Whiskers เป็นแมวเมนคูนที่มีขนาดใหญ่และใจดี"),
+                Pet(7, "Rocky", "Dog", "Bulldog", "Adult", "bulldog@shelter.net", 
+                    "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400", 
+                    "02-789-0123", "Male", "Medium", "Rocky เป็นสุนัขบูลด็อกที่แข็งแรงและรักครอบครัว"),
+                Pet(8, "Bella", "Cat", "Tabby", "Young", "tabby@catrescue.org", 
+                    "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400", 
+                    "02-890-1234", "Female", "Small", "Bella เป็นแมวลายที่ซุกซนและน่ารัก")
             ]
             
             # Filter mock data based on animal type
@@ -136,3 +148,4 @@ class PetFinderAPI:
             ]
             filtered_pets = [pet for pet in mock_pets if pet.pet_type.lower() == animal_type.lower()]
             return filtered_pets
+
