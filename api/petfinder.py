@@ -52,7 +52,11 @@ class PetFinderAPI:
                 Pet(5, "Max", "Dog", "German Shepherd", "Young", "germanrescue@shelter.com", "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=400"),
                 Pet(6, "Whiskers", "Cat", "Maine Coon", "Adult", "mainecoon@rescue.org", "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=400"),
                 Pet(7, "Rocky", "Dog", "Bulldog", "Adult", "bulldog@shelter.net", "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400"),
-                Pet(8, "Bella", "Cat", "Tabby", "Young", "tabby@catrescue.org", "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400")
+                Pet(8, "Bella", "Cat", "Tabby", "Young", "tabby@catrescue.org", "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400"),
+                Pet(9, "Oscar", "Dog", "Beagle", "Adult", "beagle@rescue.com", "https://images.unsplash.com/photo-1601758123927-4ac846cdc771?w=400"),
+                Pet(10, "Mia", "Cat", "British Shorthair", "Young", "british@catshelter.org", "https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=400"),
+                Pet(11, "Rex", "Dog", "Rottweiler", "Adult", "rottweiler@shelter.net", "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400"),
+                Pet(12, "Chloe", "Cat", "Ragdoll", "Senior", "ragdoll@rescue.org", "https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=400")
             ]
             
             # Filter mock data based on animal type
@@ -60,7 +64,7 @@ class PetFinderAPI:
                 filtered_pets = [pet for pet in mock_pets if pet.pet_type.lower() == animal_type.lower()]
             else:
                 filtered_pets = mock_pets  # Return all pets if no type specified
-            return filtered_pets[:8]  # Return up to 8 pets
+            return filtered_pets[:12]  # Return up to 12 pets
 
         try:
             headers = {"Authorization": f"Bearer {self.access_token}"}

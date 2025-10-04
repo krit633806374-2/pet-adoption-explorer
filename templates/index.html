@@ -75,55 +75,35 @@
     <section class="pet-browse-gallery">
         <div class="container">
             <div class="browse-grid">
-                <div class="browse-item" onclick="searchAllPets()">
-                    <div class="browse-image">
-                        <img src="https://images.unsplash.com/photo-1444212477490-ca407925329e?w=400&h=250&fit=crop" alt="All Pets">
-                        <div class="browse-overlay">
-                            <div class="browse-content">
-                                <i class="fas fa-paw"></i>
-                                <h3>View All Pets</h3>
-                                <p>Browse all available pets</p>
-                            </div>
-                        </div>
+                <div class="browse-button active" id="view-all-pets" onclick="searchAllPets()">
+                    <div class="button-content">
+                        <i class="fas fa-paw"></i>
+                        <h3>View All Pets</h3>
+                        <p>Browse all available pets</p>
                     </div>
                 </div>
                 
-                <div class="browse-item" onclick="searchPetType('dog')">
-                    <div class="browse-image">
-                        <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=250&fit=crop" alt="Dogs">
-                        <div class="browse-overlay">
-                            <div class="browse-content">
-                                <i class="fas fa-dog"></i>
-                                <h3>View All Dogs</h3>
-                                <p>Find your loyal companion</p>
-                            </div>
-                        </div>
+                <div class="browse-button" id="view-dogs" onclick="searchPetType('dog')">
+                    <div class="button-content">
+                        <i class="fas fa-dog"></i>
+                        <h3>View All Dogs</h3>
+                        <p>Find your loyal companion</p>
                     </div>
                 </div>
                 
-                <div class="browse-item" onclick="searchPetType('cat')">
-                    <div class="browse-image">
-                        <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=250&fit=crop" alt="Cats">
-                        <div class="browse-overlay">
-                            <div class="browse-content">
-                                <i class="fas fa-cat"></i>
-                                <h3>View All Cats</h3>
-                                <p>Find your purr-fect friend</p>
-                            </div>
-                        </div>
+                <div class="browse-button" id="view-cats" onclick="searchPetType('cat')">
+                    <div class="button-content">
+                        <i class="fas fa-cat"></i>
+                        <h3>View All Cats</h3>
+                        <p>Find your purr-fect friend</p>
                     </div>
                 </div>
                 
-                <div class="browse-item" onclick="window.location.href='/favorites'">
-                    <div class="browse-image">
-                        <img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=250&fit=crop" alt="My Favorites">
-                        <div class="browse-overlay">
-                            <div class="browse-content">
-                                <i class="fas fa-heart"></i>
-                                <h3>View My Favorites</h3>
-                                <p>See your saved pets</p>
-                            </div>
-                        </div>
+                <div class="browse-button" id="view-favorites" onclick="window.location.href='/favorites'">
+                    <div class="button-content">
+                        <i class="fas fa-heart"></i>
+                        <h3>View My Favorites</h3>
+                        <p>See your saved pets</p>
                     </div>
                 </div>
             </div>
@@ -138,10 +118,15 @@
     </div>
 
     <!-- Search Results -->
-    <section id="search-results-section" class="search-results-section hidden">
+    <section id="search-results-section" class="search-results-section">
         <div class="container">
-            <h2 class="section-title">Search Results</h2>
-            <div id="search-results" class="pets-grid"></div>
+            <h2 class="section-title">Available Pets</h2>
+            <div id="search-results" class="pets-grid">
+                <div class="initial-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading available pets...</p>
+                </div>
+            </div>
         </div>
     </section>
 

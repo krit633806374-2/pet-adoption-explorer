@@ -3,6 +3,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroSearchForm = document.getElementById('hero-search-form');
     const searchResultsSection = document.getElementById('search-results-section');
     const searchResults = document.getElementById('search-results');
+    
+    // Prevent multiple initialization
+    let isInitialized = false;
+    
+    // Debug: Check if elements exist
+    console.log('🔍 DOM Elements check:', {
+        heroSearchForm: !!heroSearchForm,
+        searchResultsSection: !!searchResultsSection,
+        searchResults: !!searchResults,
+        isInitialized: isInitialized
+    });
 
     const loading = document.getElementById('loading');
 
@@ -41,44 +52,102 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         
         const searchParams = {
-            type: document.getElementById('hero-pet-type').value || 'dog',
+            type: document.getElementById('hero-pet-type').value,
             location: document.getElementById('hero-location').value || 'New York',
             age: document.getElementById('hero-age').value,
             size: document.getElementById('hero-size').value
         };
+        
+        // Set active state based on search type
+        if (searchParams.type === 'dog') {
+            setActiveBrowseItem('view-dogs');
+        } else if (searchParams.type === 'cat') {
+            setActiveBrowseItem('view-cats');
+        } else if (!searchParams.type) {
+            setActiveBrowseItem('view-all-pets');
+        } else {
+            // Remove all active states for custom searches
+            setActiveBrowseItem('');
+        }
         
         await performSearch(searchParams);
     });
 
 
 
+    // Set active browse item
+    function setActiveBrowseItem(activeId) {
+        // Remove active class from all browse buttons
+        document.querySelectorAll('.browse-button').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Add active class to selected item
+        const activeItem = document.getElementById(activeId);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
+    }
+
     // Pet Category Cards
     window.searchPetType = async (petType) => {
+        const activeId = petType === 'dog' ? 'view-dogs' : 'view-cats';
+        setActiveBrowseItem(activeId);
         await performSearch({ type: petType, location: 'New York' });
     };
     
     // Search All Pets
     window.searchAllPets = async () => {
+        console.log('🐾 searchAllPets called - should show ALL pets (no type specified)');
+        setActiveBrowseItem('view-all-pets');
+        // Don't send type parameter at all for all pets
         await performSearch({ location: 'New York' });
     };
     
-    // Load all pets on page load
-    window.addEventListener('load', () => {
-        // Auto-load all pets when page loads
-        setTimeout(() => {
-            searchAllPets();
-        }, 500);
-    });
+    // Auto-load all pets when page is ready
+    async function initializePage() {
+        if (isInitialized) {
+            console.log('⚠️ Page already initialized, skipping...');
+            return;
+        }
+        
+        isInitialized = true;
+        console.log('🚀 Initializing page with all pets...');
+        console.log('🔧 Setting active item to view-all-pets');
+        setActiveBrowseItem('view-all-pets');
+        
+        try {
+            console.log('📞 Calling searchAllPets...');
+            await searchAllPets();
+            console.log('✅ Page initialization complete');
+        } catch (error) {
+            console.error('❌ Failed to initialize page:', error);
+            isInitialized = false; // Reset on error
+        }
+    }
+    
+    // Load pets immediately when DOM is ready (only once)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializePage);
+    } else {
+        // DOM is already ready
+        setTimeout(initializePage, 100); // Small delay to ensure everything is ready
+    }
 
     // Main Search Function
     async function performSearch(params) {
+        console.log('🔍 performSearch called with params:', params);
         showLoading();
         
         try {
             const queryParams = new URLSearchParams();
             Object.entries(params).forEach(([key, value]) => {
-                if (value) queryParams.append(key, value);
+                if (value !== null && value !== undefined && value !== '') {
+                    queryParams.append(key, value);
+                }
             });
+            
+            console.log('🌐 Final query URL:', `/search?${queryParams}`);
             
             const response = await fetch(`/search?${queryParams}`);
             
@@ -87,6 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const pets = await response.json();
+            console.log('🐕 Received pets:', pets.length, pets);
+            console.log('📊 Pet types in results:', pets.map(p => p.type));
             const displayType = params.type ? params.type : 'pets';
             displaySearchResults(pets, displayType);
             
@@ -102,14 +173,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Display Search Results
     function displaySearchResults(pets, searchType) {
         searchResults.innerHTML = '';
-        searchResultsSection.classList.remove('hidden');
         
         // Update section title
         const sectionTitle = searchResultsSection.querySelector('.section-title');
         const displayType = searchType === 'pets' ? 'pet' : searchType;
-        sectionTitle.textContent = pets.length > 0 
-            ? `Found ${pets.length} ${displayType}${pets.length !== 1 ? 's' : ''}`
-            : `No ${displayType}s found`;
+        if (pets.length > 0) {
+            sectionTitle.textContent = searchType === 'pets' ? 
+                `Available Pets (${pets.length})` : 
+                `Found ${pets.length} ${displayType}${pets.length !== 1 ? 's' : ''}`;
+        } else {
+            sectionTitle.textContent = searchType === 'pets' ? 
+                'Available Pets' : 
+                `No ${displayType}s found`;
+        }
         
         if (pets.length === 0) {
             searchResults.innerHTML = `
@@ -171,10 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // Auto-load some featured pets on page load
-    setTimeout(() => {
-        performSearch({ type: 'dog', location: 'New York' });
-    }, 1000);
+    // Auto-load is now handled by initializePage()
 });
 
 // Global Functions for onclick handlers

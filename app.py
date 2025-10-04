@@ -18,7 +18,9 @@ def favorites_page():
 def search_pets():
     animal_type = request.args.get('type', None)  # None จะแสดงสัตว์ทุกประเภท
     location = request.args.get('location', 'New York')
+    print(f"🔍 Search request: type={animal_type}, location={location}")
     pets = app_controller.search_pets(animal_type, location)
+    print(f"🐾 Found {len(pets)} pets")
     return jsonify([{
         'id': pet.pet_id,
         'name': pet.name,
