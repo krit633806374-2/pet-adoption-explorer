@@ -20,3 +20,4 @@ A CLI tool to search for pets available for adoption, save favorites, and manage
 git clone https://github.com/yourname/pet-adoption-explorer
 cd pet-adoption-explorer
 pip install -r requirements.txt
+//
