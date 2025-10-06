@@ -1,11 +1,14 @@
-// static/js/app.js
 document.addEventListener('DOMContentLoaded', () => {
   const heroSearchForm = document.getElementById('hero-search-form');
   const searchResultsSection = document.getElementById('search-results-section');
   const searchResults = document.getElementById('search-results');
   const loading = document.getElementById('loading');
+  const loadMoreBtn = document.getElementById('load-more');
 
   let isInitialized = false;
+  let currentPage = 1;
+  let totalPages = 1;
+  let currentQuery = {};
 
   function showLoading(){ loading?.classList.remove('hidden'); }
   function hideLoading(){ loading?.classList.add('hidden'); }
@@ -16,9 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.prepend(el);
     setTimeout(()=>el.remove(), 3000);
   }
-  function scrollToResults(){
-    searchResultsSection?.scrollIntoView({behavior:'smooth', block:'start'});
-  }
+  function scrollToResults(){ searchResultsSection?.scrollIntoView({behavior:'smooth', block:'start'}); }
   function setActiveBrowseItem(activeId){
     document.querySelectorAll('.browse-button').forEach(b=>b.classList.remove('active'));
     const el = document.getElementById(activeId);
@@ -28,24 +29,26 @@ document.addEventListener('DOMContentLoaded', () => {
   heroSearchForm?.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const params = {
-      type: document.getElementById('hero-pet-type')?.value,
-      location: document.getElementById('hero-location')?.value || 'New York',
-      age: document.getElementById('hero-age')?.value,
-      size: document.getElementById('hero-size')?.value
+      animal_type: document.getElementById('hero-pet-type')?.value || undefined,
+      location: document.getElementById('hero-location')?.value || '10001',
+      age: document.getElementById('hero-age')?.value || undefined,
+      size: document.getElementById('hero-size')?.value || undefined,
+      per_page: 24,
+      page: 1
     };
-    if(!params.type) setActiveBrowseItem('view-all-pets');
-    else if(params.type==='dog') setActiveBrowseItem('view-dogs');
-    else if(params.type==='cat') setActiveBrowseItem('view-cats');
-    await performSearch(params);
+    if(!params.animal_type) setActiveBrowseItem('view-all-pets');
+    else if(params.animal_type==='dog') setActiveBrowseItem('view-dogs');
+    else if(params.animal_type==='cat') setActiveBrowseItem('view-cats');
+    await startSearch(params);
   });
 
   window.searchPetType = async (petType)=>{
     setActiveBrowseItem(petType==='dog'?'view-dogs':'view-cats');
-    await performSearch({ type: petType, location: 'New York' });
+    await startSearch({ animal_type: petType, location: '10001', per_page: 24, page: 1 });
   };
   window.searchAllPets = async ()=>{
     setActiveBrowseItem('view-all-pets');
-    await performSearch({ location: 'New York' });
+    await startSearch({ location: '10001', per_page: 24, page: 1 });
   };
 
   async function initializePage(){
@@ -56,50 +59,44 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   initializePage();
 
-  async function performSearch(params){
+  async function startSearch(params){
+    searchResults.innerHTML = '';
+    currentPage = 1;
+    totalPages = 1;
+    currentQuery = params || {};
+    await fetchPage(1, true);
+  }
+
+  async function fetchPage(page = 1, replaceTitle = false){
     showLoading();
     try{
-      const q = new URLSearchParams();
-      Object.entries(params).forEach(([k,v])=>{
-        if(v!==undefined && v!==null && v!=='') q.append(k,v);
-      });
-      const res = await fetch(`/search?${q.toString()}`);
+      const q = new URLSearchParams({ ...currentQuery, page: String(page) });
+      const res = await fetch(`/api/search?${q.toString()}`);
       if(!res.ok) throw new Error(res.status);
-      const pets = await res.json();
-      displaySearchResults(pets, params.type?params.type:'pets');
+      const data = await res.json();
+
+      currentPage = data.page;
+      totalPages = data.total_pages;
+
+      appendCards(data.items);
+
+      const titleEl = searchResultsSection.querySelector('.section-title');
+      const totalNow = searchResults.children.length;
+      titleEl.textContent = `Available Pets (${totalNow})`;
+      showMessage(`Loaded page ${currentPage}/${totalPages}`);
+
+      loadMoreBtn.style.display = currentPage < totalPages ? 'block' : 'none';
+      setTimeout(scrollToResults, 100);
     }catch(err){
       console.error(err);
-      displaySearchResults([], 'pets');
       showMessage('Error searching pets','error');
     }finally{
       hideLoading();
     }
   }
 
-  function displaySearchResults(pets, searchType){
-    searchResults.innerHTML = '';
-    const titleEl = searchResultsSection.querySelector('.section-title');
-    const displayType = searchType==='pets'?'pet':searchType;
-
-    if(pets.length){
-      titleEl.textContent = searchType==='pets'
-        ? `Available Pets (${pets.length})`
-        : `Found ${pets.length} ${displayType}${pets.length!==1?'s':''}`;
-      pets.forEach(p => searchResults.appendChild(createPetCard(p)));
-      showMessage(`Found ${pets.length} ${displayType}${pets.length!==1?'s':''}!`);
-    }else{
-      titleEl.textContent = searchType==='pets' ? 'Available Pets' : `No ${displayType}s found`;
-      searchResults.innerHTML = `
-        <div class="no-results">
-          <div style="text-align:center;padding:3rem;color:var(--text-secondary);">
-            <i class="fas fa-paw" style="font-size:4rem;margin-bottom:1rem;opacity:.5;"></i>
-            <h3>No pets found</h3>
-            <p>Try adjusting your search criteria or location.</p>
-          </div>
-        </div>
-      `;
-    }
-    setTimeout(scrollToResults, 100);
+  function appendCards(items){
+    items.forEach(p => searchResults.appendChild(createPetCard(p)));
   }
 
   function createPetCard(pet){
@@ -138,28 +135,30 @@ document.addEventListener('DOMContentLoaded', () => {
     return card;
   }
 
-async function saveToFavorites(pet){
-  try{
-    const res = await fetch('/api/favorites', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(pet)
-    });
-
-    let payload;
-    try { payload = await res.json(); } catch { payload = {}; }
-
-    if(!res.ok || !payload.ok){
-      const msg = payload.error || `HTTP ${res.status}`;
-      console.error('Save failed:', msg);
-      showMessage(`Error saving favorite: ${msg}`, 'error');
-      return;
+  async function saveToFavorites(pet){
+    try{
+      const res = await fetch('/api/favorites', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(pet)
+      });
+      const payload = await res.json().catch(()=> ({}));
+      if(!res.ok || !payload.ok){
+        const msg = payload.error || `HTTP ${res.status}`;
+        console.error('Save failed:', msg);
+        showMessage(`Error saving favorite: ${msg}`, 'error');
+        return;
+      }
+      showMessage(`${pet.name || 'Pet'} added to favorites!`);
+    }catch(e){
+      console.error(e);
+      showMessage('Error saving favorite: network error','error');
     }
-    showMessage(`${pet.name || 'Pet'} added to favorites!`);
-  }catch(e){
-    console.error(e);
-    showMessage('Error saving favorite: network error','error');
   }
-}
 
+  loadMoreBtn?.addEventListener('click', async ()=>{
+    if (currentPage < totalPages) {
+      await fetchPage(currentPage + 1);
+    }
+  });
 });
