@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+pets.db
+
+# VCS
+.git/
+.gitignore
+
+# Node
+node_modules/
+
+# misc
+.DS_Store
+Thumbs.db
+*.log
+.env
