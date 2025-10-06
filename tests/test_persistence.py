@@ -1,7 +1,5 @@
-from data.persistence import PersistenceManager
-
+from data.persistance import PersistenceManager
 from models.pet import Pet
-
 
 def test_add_and_get_favorites(tmp_path):
     db_path = tmp_path / "test.db"
