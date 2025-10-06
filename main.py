@@ -1,5 +1,6 @@
 from controllers.app_controller import AppController
 
+
 def main():
     app = AppController()  # token=None → mock data
 
@@ -21,7 +22,7 @@ def main():
 
             pick = input("Enter number to save as favorite (or press Enter to skip): ")
             if pick.isdigit() and 1 <= int(pick) <= len(pets):
-                app.save_favorite(pets[int(pick)-1])
+                app.save_favorite(pets[int(pick) - 1])
                 print("✅ Saved to favorites!")
 
         elif choice == "2":
@@ -30,7 +31,9 @@ def main():
                 print("No favorites yet.")
             else:
                 for fav in favorites:
-                    print(f"ID: {fav[1]} - {fav[2]} ({fav[3]}, {fav[4]}, {fav[5]}) Contact: {fav[6]}")
+                    print(
+                        f"ID: {fav[1]} - {fav[2]} ({fav[3]}, {fav[4]}, {fav[5]}) Contact: {fav[6]}"
+                    )
                 delete_id = input("Enter pet_id to delete (or press Enter to skip): ")
                 if delete_id:
                     app.delete_favorite(delete_id)
@@ -43,6 +46,7 @@ def main():
         elif choice == "4":
             print("Bye!")
             break
+
 
 if __name__ == "__main__":
     main()

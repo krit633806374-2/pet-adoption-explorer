@@ -1,4 +1,3 @@
-// static/js/favorites.js
 document.addEventListener('DOMContentLoaded', () => {
   loadFavorites();
   setupFilters();
@@ -24,7 +23,7 @@ async function loadFavorites(){
   try{
     loading?.classList.remove('hidden');
     const res = await fetch('/api/favorites');
-    const data = await res.json(); // array
+    const data = await res.json();
     loading?.classList.add('hidden');
 
     if(Array.isArray(data) && data.length){
@@ -93,8 +92,7 @@ function filterFavorites(filter){
   const cards = document.querySelectorAll('.pet-card');
   cards.forEach(c => {
     if(filter==='all') { c.style.display='block'; return; }
-    const typeEl = c.querySelector('.detail-row span');
-    const text = (typeEl?.innerText || '').toLowerCase();
+    const text = (c.querySelector('.pet-details')?.innerText || '').toLowerCase();
     c.style.display = text.includes(filter) ? 'block' : 'none';
   });
 }
@@ -108,7 +106,7 @@ function updateStats(pets){
   totalEl && (totalEl.textContent = pets.length);
   dogEl && (dogEl.textContent = pets.filter(p=> (p.type||'').toLowerCase()==='dog').length);
   catEl && (catEl.textContent = pets.filter(p=> (p.type||'').toLowerCase()==='cat').length);
-  recentEl && (recentEl.textContent = Math.min(pets.length, 5)); // เดโม่ง่าย ๆ
+  recentEl && (recentEl.textContent = Math.min(pets.length, 5));
 }
 
 function showMessage(message, type='success'){

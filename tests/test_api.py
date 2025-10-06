@@ -1,5 +1,5 @@
-import pytest
 from api.petfinder import PetFinderAPI
+
 
 def test_search_animals_mock():
     api = PetFinderAPI()  # no token = mock mode
