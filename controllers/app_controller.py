@@ -1,8 +1,7 @@
-# controllers/app_controller.py
 from flask import Blueprint, Response, jsonify, redirect, render_template, request
 
-from api.petfinder import PetFinderAPI 
-from data.persistence import PersistenceManager
+from api.petfinder import PetFinderAPI
+from data.persistance import PersistenceManager
 from models.pet import Pet
 
 bp = Blueprint("app_controller", __name__)
@@ -92,7 +91,7 @@ def api_search_paged():
         gender=q.get("gender"),
         page=int(q.get("page", 1)),
         per_page=int(q.get("per_page", 24)),
-        as_dict=True,
+        
     )
 
     # เก็บประวัติการค้นหา (ถ้ามี table)

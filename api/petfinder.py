@@ -1,10 +1,13 @@
 # api/petfinder.py
 import os
-import requests
+
 from dotenv import load_dotenv
+import requests
+
 from models.pet import Pet
 
 load_dotenv()
+
 
 class PetFinderAPI:
     BASE_URL = "https://api.petfinder.com/v2"
@@ -56,27 +59,34 @@ class PetFinderAPI:
         gender=None,
         page=1,
         per_page=24,
-        as_dict: bool = False,   # <<<<<< สำคัญ: ค่าเริ่มต้น False เพื่อให้เทสต์ได้ list
+        as_dict: bool = False,
     ):
-        # ---------- MOCK ----------
         if self.mock_mode:
             pets = self._mock_pets(animal_type)
             if as_dict:
                 return {
-                    "items": pets, "page": 1, "total_pages": 1,
-                    "per_page": len(pets), "count": len(pets)
+                    "items": pets,
+                    "page": 1,
+                    "total_pages": 1,
+                    "per_page": len(pets),
+                    "count": len(pets),
                 }
             return pets
 
-        # ---------- REAL API ----------
         try:
             params = {"page": max(int(page), 1), "limit": min(int(per_page), 100)}
-            if animal_type: params["type"] = animal_type
-            if location: params["location"] = location
-            if age: params["age"] = age
-            if breed: params["breed"] = breed
-            if size: params["size"] = size
-            if gender: params["gender"] = gender
+            if animal_type:
+                params["type"] = animal_type
+            if location:
+                params["location"] = location
+            if age:
+                params["age"] = age
+            if breed:
+                params["breed"] = breed
+            if size:
+                params["size"] = size
+            if gender:
+                params["gender"] = gender
 
             resp = requests.get(
                 f"{self.BASE_URL}/animals",
@@ -120,7 +130,8 @@ class PetFinderAPI:
                         breed=breed_primary,
                         age=it.get("age", "Unknown"),
                         contact=email,
-                        photo_url=photo or "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400",
+                        photo_url=photo
+                        or "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400",
                         phone=phone,
                         gender=gender_v,
                         size=size_v,
@@ -147,7 +158,10 @@ class PetFinderAPI:
             pets = self._mock_pets(animal_type)
             if as_dict:
                 return {
-                    "items": pets, "page": 1, "total_pages": 1,
-                    "per_page": len(pets), "count": len(pets)
+                    "items": pets,
+                    "page": 1,
+                    "total_pages": 1,
+                    "per_page": len(pets),
+                    "count": len(pets),
                 }
             return pets
