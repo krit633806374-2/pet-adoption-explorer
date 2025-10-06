@@ -1,23 +1,41 @@
-# pet-adoption-explorer
-For Script Project
+## Pet Adoption Explorer 🐶🐱
 
-# Pet Adoption Explorer 🐶🐱
+## Setup & Installation
 
-A CLI tool to search for pets available for adoption, save favorites, and manage them locally with SQLite.
+# Prerequisites
 
-## Features
-- Search pets by type and location (via Petfinder API or mock)
-- View detailed info (name, breed, age, contact, photo link)
-- Save favorites into SQLite
-- View & delete favorites
-- Export favorites to JSON/CSV
-- CLI menu interface
-- Unit tests with pytest
-- CI/CD ready (GitHub Actions, flake8 linting)
+ตรวจสอบให้แน่ใจว่าได้ทำการติดตั้งสิ่งเหล่านี้แล้ว
+
+- python version 3.10 ขึ้นไป
+- 
+- pip (เป็นตัวจัดการแพ็คเกจของ python)
 
 ## Installation
-```bash
-git clone https://github.com/yourname/pet-adoption-explorer
-cd pet-adoption-explorer
-pip install -r requirements.txt
-//
+
+1. Clone repository จาก Github
+ 
+  git clone https://github.com/krit633806374-2/pet-adoption-explorer.git
+
+  cd pet-adoption-explorer
+
+2. สร้าง virtual environment
+   
+  python -m venv venv
+  
+  source venv/bin/activate       กรณีใช้งานบน macOS / Linux
+  
+  venv\Scripts\activate          กรณีใช้งานบน Windows
+
+3. ติดตั้ง dependencies
+
+  pip install -r requirements.txt
+
+4. สร้างไฟล์ .env แล้วใส่ค่า API key ของ Petfinder
+
+  PETFINDER_API_KEY= นำ API Key มาใส่ทื่ตรงนี้
+  
+  PETFINDER_API_SECRET= นำ Secret Key มาใส่ทื่ตรงนี้
+
+## Running the Program
+
+1. 
