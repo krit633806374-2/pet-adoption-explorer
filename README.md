@@ -16,24 +16,41 @@ CI: GitHub Actions (lint + test + build)
 
 รองรับ Docker / Railway PaaS
 
-🧱 โครงสร้างโปรเจกต์ (ย่อ)
+🧱 โครงสร้างโปรเจกต์
 pet-adoption-explorer/
-├─ app.py                      # Flask app entry (ใช้กับ Gunicorn)
+
+├─ app.py   # Flask app entry (ใช้กับ Gunicorn)
+
 ├─ controllers/
+
 │  └─ app_controller.py        # เส้นทางทั้งหมดของแอป
+
 ├─ api/
+
 │  └─ petfinder.py             # เรียก Petfinder API + mock fallback
+
 ├─ data/
+
 │  └─ persistance.py           # ตัวจัดการ SQLite (favorites/history)
+
 ├─ models/
+
 │  └─ pet.py                   # dataclass Pet
+
 ├─ templates/                  # HTML (Jinja2)
+
 ├─ static/                     # CSS/JS รูปภาพ
+
 ├─ tests/                      # pytest (API + persistence)
+
 ├─ Dockerfile
+
 ├─ docker-compose.yml
+
 ├─ requirements.txt
+
 ├─ pyproject.toml              # ruff/flake8 config
+
 └─ README.md
 
 ✅ ข้อกำหนดเบื้องต้น (Prerequisites)
@@ -48,23 +65,28 @@ pip
 
 🚀 วิธีติดตั้ง (Installation)
 1) โคลนโปรเจกต์
+
 git clone https://github.com/krit633806374-2/pet-adoption-explorer.git
+
 cd pet-adoption-explorer
 
-2) สร้าง Virtual Environment
+3) สร้าง Virtual Environment
 
 Windows (CMD/PowerShell)
 
 python -m venv .venv
+
 .\.venv\Scripts\activate
 
 
 macOS/Linux
 
 python3 -m venv .venv
+
 source .venv/bin/activate
 
 3) ติดตั้ง dependencies
+   
 pip install -r requirements.txt
 
 4) ตั้งค่า Environment Variables (ไฟล์ .env)
@@ -72,20 +94,26 @@ pip install -r requirements.txt
 สร้างไฟล์ .env ที่รากโปรเจกต์ แล้วใส่ค่า:
 
 # จำเป็นถ้าจะเรียก Petfinder จริง (ถ้าไม่ใส่จะใช้โหมด mock)
-PETFINDER_API_KEY=ใส่คีย์ของคุณ
-PETFINDER_API_SECRET=ใส่ซีเคร็ตของคุณ
+
+PETFINDER_API_KEY=ใส่คีย์ข
+
+PETFINDER_API_SECRET=ใส่ซีเคร็ต
 
 # พอร์ตที่รัน (Dev/Prod ใช้ 8000)
+
 PORT=8000
 
 # ตำแหน่งฐานข้อมูล SQLite (โลคัลจะสร้างที่ไฟล์นี้)
+
 PETS_DB_PATH=./pets.db
 
 
 หมายเหตุ: ถ้ายังไม่มีคีย์ Petfinder แอปจะใช้ mock mode คืนรายการตัวอย่างเพื่อให้ทดสอบ UI/Flow ได้
 
 🏃‍♂️ รันแอปบนเครื่อง (Local Development)
+
 ทางเลือก A: รันด้วย Flask dev server
+
 python app.py
 
 
@@ -94,11 +122,13 @@ python app.py
 UI: http://127.0.0.1:8000
 
 Health: http://127.0.0.1:8000/health
+
  → {"ok": true}
 
 ถ้าเข้า http://localhost:8000 ไม่ขึ้น ให้ใช้ http://127.0.0.1:8000 (บางเครื่อง DNS “localhost” ถูกปิด/เปลี่ยน)
 
 ทางเลือก B: รันด้วย Docker Compose
+
 docker compose up --build
 
 
@@ -109,14 +139,19 @@ docker compose up --build
 ติดตั้งเครื่องมือแล้วรัน:
 
 # ติดตั้ง (ครั้งแรก)
+
 pip install pytest ruff flake8
 
 # รันเทสต์
+
 pytest -q
 
 # จัดรูปแบบ / ลินต์
+
 ruff format .
+
 ruff check . --fix
+
 flake8 .
 
 🗂️ SQLite & ไฟล์ข้อมูล
@@ -132,16 +167,27 @@ search_history
 ส่งออก CSV: GET /api/favorites/export.csv
 
 REST API (สำคัญ)
+
 Method	Path	ใช้ทำอะไร
+
 GET	/	หน้าเว็บหลัก (UI)
+
 GET	/favorites	หน้า Favorites (UI)
+
 GET	/health	Health check → {"ok": true}
+
 GET	/api/search	ค้นหาสัตว์ (รองรับแบ่งหน้า)
+
 GET	/api/favorites	อ่าน favorites ทั้งหมด
+
 POST	/api/favorites	บันทึก favorite (JSON body = pet fields)
+
 DELETE	/api/favorites/<pet_id>	ลบ favorite ตาม id
+
 GET	/api/favorites/export.csv	ส่งออก CSV
+
 GET	/api/history	อ่านประวัติการค้นหา (ล่าสุดก่อน)
+
 DELETE	/api/history	ล้างประวัติการค้นหา
 
 ดีพลอยด้วย Railway (ฟรี & ง่าย)
