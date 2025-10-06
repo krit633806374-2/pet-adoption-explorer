@@ -1,4 +1,3 @@
-# api/petfinder.py
 import os
 
 from dotenv import load_dotenv
@@ -16,8 +15,10 @@ class PetFinderAPI:
         self.api_key = api_key or os.getenv("PETFINDER_API_KEY")
         self.secret = secret or os.getenv("PETFINDER_API_SECRET")
         self.access_token = None
+        # ถ้าไม่มีคีย์/ซีเคร็ต จะทำงานโหมด mock
         self.mock_mode = not (self.api_key and self.secret)
 
+    # ---------- OAuth ----------
     def _get_token(self):
         r = requests.post(
             f"{self.BASE_URL}/oauth2/token",
@@ -36,19 +37,27 @@ class PetFinderAPI:
             self._get_token()
         return {"Authorization": f"Bearer {self.access_token}"}
 
+    # ---------- Mock data ----------
     def _mock_pets(self, animal_type: str | None):
         pets = [
-            Pet(1, "Buddy", "Dog", "Labrador Retriever", "Adult", "shelter@email.com",
-                "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400"),
-            Pet(2, "Luna", "Cat", "Domestic Shorthair", "Adult", "adopt@happytails.org",
-                "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400"),
-            Pet(3, "Max", "Dog", "Poodle Mix", "Baby", "hello@sunshinerescue.org",
-                "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400"),
+            Pet(
+                1, "Buddy", "Dog", "Labrador Retriever", "Adult", "shelter@email.com",
+                "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400"
+            ),
+            Pet(
+                2, "Luna", "Cat", "Domestic Shorthair", "Adult", "adopt@happytails.org",
+                "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400"
+            ),
+            Pet(
+                3, "Max", "Dog", "Poodle Mix", "Baby", "hello@sunshinerescue.org",
+                "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=400"
+            ),
         ]
         if animal_type:
             pets = [p for p in pets if p.pet_type.lower() == animal_type.lower()]
         return pets
 
+    # ---------- Public search ----------
     def search_animals(
         self,
         animal_type="dog",
@@ -61,6 +70,7 @@ class PetFinderAPI:
         per_page=24,
         as_dict: bool = False,
     ):
+        # โหมด mock (ไม่มีคีย์) — คืนผลให้สอดคล้องกันเสมอ
         if self.mock_mode:
             pets = self._mock_pets(animal_type)
             if as_dict:
@@ -95,6 +105,7 @@ class PetFinderAPI:
                 timeout=10,
             )
             if resp.status_code == 401:
+                # token หมดอายุ → ขอใหม่
                 self._get_token()
                 resp = requests.get(
                     f"{self.BASE_URL}/animals",
@@ -105,6 +116,7 @@ class PetFinderAPI:
             resp.raise_for_status()
             payload = resp.json()
 
+            # Map เป็น model ของเรา
             animals = payload.get("animals", [])
             pets = []
             for it in animals:
@@ -154,6 +166,7 @@ class PetFinderAPI:
             return pets
 
         except Exception as e:
+            # ถ้า API พลาด ให้ fallback mock แต่ “คงรูปแบบ” ให้เหมือนกัน
             print(f"[Petfinder] fallback MOCK (error={e})")
             pets = self._mock_pets(animal_type)
             if as_dict:

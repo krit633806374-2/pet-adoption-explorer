@@ -8,23 +8,19 @@ bp = Blueprint("app_controller", __name__)
 db = PersistenceManager()
 pf = PetFinderAPI()
 
-
 # ---------- Pages ----------
 @bp.get("/")
 def index():
     return render_template("index.html")
 
-
 @bp.get("/favorites")
 def favorites_page():
     return render_template("favorites.html")
-
 
 # ---------- API: Favorites ----------
 @bp.get("/api/favorites")
 def api_list_favorites():
     return jsonify(db.list_favorites())
-
 
 @bp.post("/api/favorites")
 def api_add_favorite():
@@ -50,10 +46,8 @@ def api_add_favorite():
         return jsonify({"ok": True, "id": pet.pet_id})
     except Exception as e:
         import traceback
-
         traceback.print_exc()
         return jsonify({"ok": False, "error": str(e)}), 500
-
 
 @bp.get("/api/_diag/schema")
 def api_diag_schema():
@@ -61,12 +55,10 @@ def api_diag_schema():
         rows = con.execute("PRAGMA table_info(favorites)").fetchall()
     return jsonify([dict(r) for r in rows])
 
-
 @bp.delete("/api/favorites/<pet_id>")
 def api_delete_favorite(pet_id):
     db.delete_favorite(pet_id)
     return jsonify({"ok": True})
-
 
 @bp.get("/api/favorites/export.csv")
 def api_export_csv():
@@ -77,39 +69,52 @@ def api_export_csv():
         headers={"Content-Disposition": 'attachment; filename="favorites.csv"'},
     )
 
-
 # ---------- API: Search (ตัวจริง + บันทึกประวัติ) ----------
 @bp.get("/api/search")
 def api_search_paged():
     q = request.args
+
+    # ขอผล “แบบ dict” โดยตรง (ปกติ)
     result = pf.search_animals(
         animal_type=q.get("animal_type") or q.get("type") or None,
-        location=q.get("location", "10001"),  # ใช้ ZIP สหรัฐ
+        location=q.get("location", "10001"),
         age=q.get("age"),
         breed=q.get("breed"),
         size=q.get("size"),
         gender=q.get("gender"),
         page=int(q.get("page", 1)),
         per_page=int(q.get("per_page", 24)),
-        
+        as_dict=True,  # << สำคัญ
     )
 
-    # เก็บประวัติการค้นหา (ถ้ามี table)
+    # เผื่อบางเครื่องมี lib เก่าคืน list (กันล้ม)
+    if isinstance(result, list):
+        items = result
+        page = 1
+        total_pages = 1
+        per_page = len(items)
+        count = len(items)
+    else:
+        items = result.get("items", [])
+        page = result.get("page", 1)
+        total_pages = result.get("total_pages", 1)
+        per_page = result.get("per_page", 24)
+        count = result.get("count", len(items))
+
+    # เก็บประวัติการค้นหา แต่ถ้าพลาดไม่ให้รีเควสล้ม
     try:
-        db.add_search_history(
-            {
-                "animal_type": q.get("animal_type") or q.get("type"),
-                "location": q.get("location"),
-                "age": q.get("age"),
-                "size": q.get("size"),
-                "breed": q.get("breed"),
-                "gender": q.get("gender"),
-                "per_page": q.get("per_page", 24),
-                "page": q.get("page", 1),
-            }
-        )
-    except Exception:
-        pass
+        db.add_search_history({
+            "animal_type": q.get("animal_type") or q.get("type"),
+            "location": q.get("location"),
+            "age": q.get("age"),
+            "size": q.get("size"),
+            "breed": q.get("breed"),
+            "gender": q.get("gender"),
+            "per_page": q.get("per_page", 24),
+            "page": q.get("page", 1),
+        })
+    except Exception as e:
+        print("[warn] history write failed:", e)
 
     def to_dict(p: Pet):
         return {
@@ -126,35 +131,29 @@ def api_search_paged():
             "description": getattr(p, "description", None),
         }
 
-    return jsonify(
-        {
-            "items": [to_dict(p) for p in result["items"]],
-            "page": result["page"],
-            "total_pages": result["total_pages"],
-            "per_page": result["per_page"],
-            "count": result["count"],
-        }
-    )
-
+    return jsonify({
+        "items": [to_dict(p) for p in items],
+        "page": page,
+        "total_pages": total_pages,
+        "per_page": per_page,
+        "count": count,
+    })
 
 # ---------- Legacy redirect ----------
 @bp.get("/search")
 def api_search_legacy():
     return redirect(f"/api/search?{request.query_string.decode('utf-8')}", code=302)
 
-
-# ---------- Search History APIs (ออปชัน) ----------
+# ---------- Search History APIs ----------
 @bp.get("/api/history")
 def api_history():
     limit = int(request.args.get("limit", 50))
     return jsonify(db.list_search_history(limit))
 
-
 @bp.delete("/api/history")
 def api_history_clear():
     db.clear_search_history()
     return jsonify({"ok": True})
-
 
 # ---------- Health ----------
 @bp.get("/health")
