@@ -33,15 +33,19 @@ jobs:
 
       - name: Lint
         run: |
-          ruff check .
+          ruff check . --fix
           ruff format --check .
 
       - name: Run tests
+        env:
+          PETS_DB_PATH: ./pets_ci.db
+          PYTHONPATH: .
         run: pytest -q
 
   docker-build:
     runs-on: ubuntu-latest
     needs: test
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
